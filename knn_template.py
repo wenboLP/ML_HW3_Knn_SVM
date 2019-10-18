@@ -90,8 +90,16 @@ def calc_accuracy(y_predict, y):
 def barplot(klist, accuracy_list):
     # your code
     # use matplot lib to generate bar plot with K on x axis and cross validation accuracy on y-axis
-    plt.bar(klist, accuracy_list, label= 'k vs accuracy')
-    plt.legend()
+    plt.bar(klist, accuracy_list) #, label= 'k vs accuracy')
+    # plt.legend()
+    # my_x_ticks = np.arange(1, 14, )
+    # plt.xlim((klist[0],klist[-1]))
+    my_x_ticks = np.arange(klist[0],klist[-1]+2, 2)
+    plt.xticks(my_x_ticks)
+    plt.ylim((0.5, 0.65))
+    plt.xlabel('k')    
+    plt.ylabel('accuracy')
+    plt.title('K vs Accuracy')
     plt.show()
     return
 
@@ -121,7 +129,7 @@ def findBestK(x, y, klist, nfolds):
         print(k, accuracy)
     # plot cross validation error for each k : implement function barplot(klist, accuracy_list)
     barplot(klist, accuracy_list)
-    return kbest
+    return kbest, accuracy_list
 
 
 if __name__ == "__main__":
@@ -144,8 +152,10 @@ if __name__ == "__main__":
     acc = calc_accuracy(y_predict, y_test)
     acc
      
-    bestk = findBestK(x, y, klist, nfolds)
+    bestk, accuracy_list = findBestK(x, y, klist, nfolds)
     # report best k, and accuracy, discuss why some k work better than others
+    barplot(klist, accuracy_list)
+    bestk
 
 
 # neigh = KNeighborsClassifier(n_neighbors=k_nei)

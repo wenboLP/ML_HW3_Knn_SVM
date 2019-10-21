@@ -43,7 +43,7 @@ def load_data(csv_file_path):
     data_processed = pd.concat([data_num_norm, data_catg_encode], axis=1)
     # data_num_norm.columns 
     # data_catg_encode.columns
-    data_processed.columns   
+    # data_processed.columns   
     # a = list(data_num_norm.columns) + list(data_catg_encode.columns)
     # b =  list(data_processed.columns)
     # a==b
@@ -52,7 +52,6 @@ def load_data(csv_file_path):
     y [y == ' >50K' ] = 1
     y [y == ' <=50K' ] = 0
     # data.loc[:,'label']  # ？？？
-
     return x, y
 
 # 2. Select best hyperparameter with cross validation and train model.
@@ -63,7 +62,14 @@ def train_and_select_model(training_csv):
     x_train, y_train = load_data(training_csv)
     x_val = x_train.values
     y_val = y_train.values
-    np.where((y_val!=0)and(y_val!=1) )
+    y_val=y_val.astype('int')
+
+# for i in range(len(y_val)):
+#     if ( y_val[i]!=0 and y_val[i]!=1 ) :
+#         print(i)
+#         print(y_val[i])
+
+
     # hard code hyperparameter configurations, an example:
     param_set = [
                  {'kernel': 'rbf', 'C': 1, 'degree': 1},
@@ -75,6 +81,7 @@ def train_and_select_model(training_csv):
     my_nodel  = SVC( C=1.0, degree=1)
     my_nodel.fit(x_val, y_val)
 
+    
 
     # your code here
     # iterate over all hyperparameter configurations

@@ -4,6 +4,7 @@ import numpy as np
 np.random.seed(37)
 import random
 import pandas as pd
+from time import time
 
 from sklearn.svm import SVC
 # Att: You're not allowed to use modules other than SVC in sklearn, i.e., model_selection.
@@ -50,9 +51,27 @@ def load_data(csv_file_path):
     x = data_processed
     y = data.loc[:,'label']
     y [y == ' >50K' ] = 1
-    y [y == ' <=50K' ] = 0
+    y [y == ' <=50K' ] = -1
     # data.loc[:,'label']  # ？？？
     return x, y
+
+def fold (x,y, ith_f, nfolds):
+    n = len(x)
+    # nfolds = 3
+    np.random.seed(nfolds) 
+    idx_sample = np.random.choice(n, n, replace=False)
+    n_per_dold = int(np.ceil(n/nfolds))
+    idx_array = np.zeros(n)
+    if ith_f == nfolds-1:
+        idx_array[ idx_sample[ith_f * n_per_dold: ] ] = 1
+    else:
+        idx_array[ idx_sample[ith_f * n_per_dold: (ith_f+1)*n_per_dold ] ] = 1
+    x_cvtrain = x[idx_array==0]
+    y_cvtrain = y[idx_array==0]
+    x_cvtest = x[idx_array==1]
+    y_cvtest = y[idx_array==1]
+    return x_cvtrain, y_cvtrain, x_cvtest, y_cvtest
+
 
 # 2. Select best hyperparameter with cross validation and train model.
 # Attention: Write your own hyper-parameter candidates.
@@ -64,12 +83,43 @@ def train_and_select_model(training_csv):
     y_val = y_train.values
     y_val=y_val.astype('int')
 
+    n_fold = 3
+    for ith in range(n_fold):  # ith=1 
+        x_cvtrain, y_cvtrain, x_cvtest, y_cvtest = fold (x_val,y_val, ith, n_fold)
+        my_nodel  = SVC( C=1.0, gamma=0.2)
+        my_nodel_time = time()
+        my_nodel.fit(x_cvtrain, y_cvtrain)
+        my_nodel_time = time() - my_nodel_time 
+        score = my_nodel.score(x_cvtest, y_cvtest)
+        # 1 0 -> 0.8411    1 -1 -> 0.8411
+        score_self = my_nodel.score(x_cvtrain, y_cvtrain) # self test, should be very high
+        # 1 0 -> 0.84691    1 -1 -> 0.84691
+
+        y_cvpredict = my_nodel.predict(x_cvtest)
+
+        
+        #？ 是0/1么？ 计算准确度 
+C_range = np.logspace(-2, 10, 13)
+gamma_range = np.logspace(-9, 3, 13)
+param_grid = dict(gamma=gamma_range, C=C_range)
+from sklearn.model_selection import StratifiedShuffleSplit
+cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+from sklearn.model_selection import GridSearchCV
+grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
+grid.fit(x_val, y_val)
+print("The best parameters are %s with a score of %0.2f"
+      % (grid.best_params_, grid.best_score_))
+score = my_nodel.score(x_cvtest, y_cvtest)
+
+https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+https://scikit-learn.org/stable/auto_examples/plot_kernel_approximation.html#sphx-glr-auto-examples-plot-kernel-approximation-py
+https://scikit-learn.org/stable/auto_examples/svm/plot_rbf_parameters.html#sphx-glr-auto-examples-svm-plot-rbf-parameters-py
+
+
 # for i in range(len(y_val)):
 #     if ( y_val[i]!=0 and y_val[i]!=1 ) :
 #         print(i)
 #         print(y_val[i])
-
-
     # hard code hyperparameter configurations, an example:
     param_set = [
                  {'kernel': 'rbf', 'C': 1, 'degree': 1},
@@ -77,12 +127,8 @@ def train_and_select_model(training_csv):
                  {'kernel': 'rbf', 'C': 1, 'degree': 5},
                  {'kernel': 'rbf', 'C': 1, 'degree': 7},
     ]
-
     my_nodel  = SVC( C=1.0, degree=1)
     my_nodel.fit(x_val, y_val)
-
-    
-
     # your code here
     # iterate over all hyperparameter configurations
     # perform 3 FOLD cross validation

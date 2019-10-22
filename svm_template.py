@@ -107,13 +107,17 @@ def train_and_select_model(training_csv):
         # 输入：参数，数据
         # 输出：acc
     n_fold = 3
-    c_start, c_end = -3, 5      #-5 , 15
-    c_num = c_end - c_start + 1
-    c_grid = np.logspace(c_start, c_end, num =c_num, base=2)
 
-    gama_start, gama_end = -5,2      #-15,3
-    gama_num = gama_end - gama_start + 1
-    gama_grid = np.logspace(gama_start, gama_end, num =gama_num, base=2)
+    # c_start, c_end = -3, 5      #-5 , 15 [ 0.125,  0.25,  0.5 ,  1.,  2.,  4.,  8. , 16. 32.   ]
+    # c_num = c_end - c_start + 1
+    # c_grid = np.logspace(c_start, c_end, num =c_num, base=2)
+    c_grid = [0.001, 0.005, 0.01, 0.1, 0.5, 1, 5, 10]
+
+    # gama_start, gama_end = -7,2      #-15,3
+    # gama_num = gama_end - gama_start + 1
+    # gama_grid = np.logspace(gama_start, gama_end, num =gama_num/2, base=2)
+    gama_grid = [0.1,  0.2,  0.4,  0,8,  1.6, 3.2, 6.4]
+
 
     m_c = len(c_grid)
     n_g = len(gama_grid)
@@ -123,9 +127,9 @@ def train_and_select_model(training_csv):
     print ('m_c =',m_c, ';    n_g =', n_g)
     
     for i in range(m_c):
-        print('current i = ', i)
+        print('current i = ', i, ' C = ', c_grid[i])
         for j in range(n_g):
-            print(' j = ' , j)
+            print(' j = ' , j, '  gama = ', gama_grid[j])
             acc = cross_vali(x_val, y_val, c_grid[i], gama_grid[j], n_fold )
             acc_mat[i][j] =  c_grid[i]
             if acc > best_acc:

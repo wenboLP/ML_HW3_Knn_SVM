@@ -7,11 +7,9 @@ import pandas as pd
 from time import time
 
 from sklearn.svm import SVC
-# Att: You're not allowed to use modules other than SVC in sklearn, i.e., model_selection.
 
 # Dataset information
-# the column names (names of the features) in the data files
-# you can use this information to preprocess the features
+
 col_names_x = ['age', 'workclass', 'fnlwgt', 'education', 'education-num', 'marital-status',
              'occupation', 'relationship', 'race', 'sex', 'capital-gain', 'capital-loss',
              'hours-per-week', 'native-country']
@@ -28,7 +26,6 @@ categorical_cols = ['workclass', 'education', 'marital-status', 'occupation', 'r
 # For example, as a start you can use one hot encoding for the categorical variables and normalization 
 # for the continuous variables.
 def load_data(csv_file_path):
-    # your code here
     # csv_file_path = "salary.labeled.csv"  # for test ~~~~~~~~~~~~~
     data = pd.read_csv(csv_file_path, names=col_names_x+col_names_y,  sep=',', na_values='?')
 
@@ -108,6 +105,16 @@ def train_and_select_model(training_csv):
         # 输出：acc
     n_fold = 3
 
+    # # one para test ------------
+    # x_cvtrain, y_cvtrain, x_cvtest, y_cvtest = fold (x_val,y_val, 1, n_fold)
+    # my_nodel  = SVC( C=1.0)
+    # my_nodel.fit(x_cvtrain, y_cvtrain)
+    # # score = my_nodel.score(x_cvtest, y_cvtest)
+    # y_cvpredict = my_nodel.predict(x_cvtest)   
+    # score = acc_calculate(y_cvpredict, y_cvtest)
+    # # 1.0  gama默认 0.83758
+    # # --------------------------
+
     # c_start, c_end = -3, 5      #-5 , 15 [ 0.125,  0.25,  0.5 ,  1.,  2.,  4.,  8. , 16. 32.   ]
     # c_num = c_end - c_start + 1
     # c_grid = np.logspace(c_start, c_end, num =c_num, base=2)
@@ -116,8 +123,10 @@ def train_and_select_model(training_csv):
     # gama_start, gama_end = -7,2      #-15,3
     # gama_num = gama_end - gama_start + 1
     # gama_grid = np.logspace(gama_start, gama_end, num =gama_num/2, base=2)
-    gama_grid = [0.1,  0.2,  0.4,  0,8,  1.6, 3.2, 6.4]
+    gama_grid = [0.1,  0.2,  0.4,  0.8,  1.6, 3.2, 6.4]
 
+    c_grid = [1.0,]
+    gama_grid = [0.01, ]
 
     m_c = len(c_grid)
     n_g = len(gama_grid)
@@ -148,34 +157,13 @@ def train_and_select_model(training_csv):
     # select best hyperparameter from cv scores, retrain model 
     return best_model, best_score
 
-        
-        #？ 是0/1么？ 计算准确度 
-# C_range = np.logspace(-2, 10, 13)
-# gamma_range = np.logspace(-9, 3, 13)
-# param_grid = dict(gamma=gamma_range, C=C_range)
-# from sklearn.model_selection import StratifiedShuffleSplit
-# cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
-# from sklearn.model_selection import GridSearchCV
-# grid = GridSearchCV(SVC(), param_grid=param_grid, cv=cv)
-# grid.fit(x_val, y_val)
-# print("The best parameters are %s with a score of %0.2f"
-#       % (grid.best_params_, grid.best_score_))
-# score = my_nodel.score(x_cvtest, y_cvtest)
-
-# https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-# https://scikit-learn.org/stable/auto_examples/plot_kernel_approximation.html#sphx-glr-auto-examples-plot-kernel-approximation-py
-# https://scikit-learn.org/stable/auto_examples/svm/plot_rbf_parameters.html#sphx-glr-auto-examples-svm-plot-rbf-parameters-py
-
-
-
-    
-
 # predict for data in filename test_csv using trained model
 def predict(test_csv, trained_model):
     test_csv = "salary.2Predict.csv"  # for test ~~~~~~~~~~~~
     x_test, _ = load_data(test_csv)
-
-    predictions = trained_model.predict(x_test)
+    x_test.drop(['native-country_ Holand-Netherlands'], axis = 1, inplace =  True  )
+    x_test_val = x_test.values
+    predictions = trained_model.predict(x_test_val)
     return predictions
 
 # save predictions on test data in desired format 
